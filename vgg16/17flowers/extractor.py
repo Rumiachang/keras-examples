@@ -1,5 +1,5 @@
 import os
-from keras.applications.vgg16 import VGG16
+from tensorflow.keras.applications.vgg16 import VGG16
 from keras.preprocessing.image import ImageDataGenerator
 from keras.models import Sequential
 from keras.layers import Activation, Dropout, Flatten, Dense
@@ -8,12 +8,13 @@ from keras.utils import np_utils
 import numpy as np
 from smallcnn import save_history
 
-
+"""
 classes = ['Tulip', 'Snowdrop', 'LilyValley', 'Bluebell', 'Crocus',
            'Iris', 'Tigerlily', 'Daffodil', 'Fritillary', 'Sunflower',
            'Daisy', 'ColtsFoot', 'Dandelion', 'Cowslip', 'Buttercup',
            'Windflower', 'Pansy']
-
+"""
+classes = ['Japanese macaque', 'Human']
 batch_size = 32
 nb_classes = len(classes)
 

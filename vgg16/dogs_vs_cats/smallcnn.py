@@ -1,8 +1,9 @@
 import os
-from keras.models import Sequential
-from keras.layers import Convolution2D, MaxPooling2D
-from keras.layers import Activation, Dropout, Flatten, Dense
-from keras.preprocessing.image import ImageDataGenerator
+import tensorflow
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Convolution2D, MaxPooling2D
+from tensorflow.keras.layers import Activation, Dropout, Flatten, Dense
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 nb_epoch = 50
 
@@ -28,7 +29,7 @@ if __name__ == '__main__':
     model = Sequential()
     model.add(Convolution2D(32, 3, 3, input_shape=(150, 150, 3)))
     model.add(Activation('relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
+   # model.add(MaxPooling2D(pool_size=(2, 2)))
 
     model.add(Convolution2D(32, 3, 3))
     model.add(Activation('relu'))
@@ -73,10 +74,10 @@ if __name__ == '__main__':
     # 訓練
     history = model.fit_generator(
         train_generator,
-        samples_per_epoch=2000,
-        nb_epoch=nb_epoch,
+        steps_per_epoch=2000,
+        epochs=nb_epoch,
         validation_data=validation_generator,
-        nb_val_samples=800)
+        validation_steps=800)
 
     # 結果を保存
     model.save_weights(os.path.join(result_dir, 'smallcnn.h5'))
