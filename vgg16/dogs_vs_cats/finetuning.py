@@ -1,10 +1,11 @@
 import os
-from keras.applications.vgg16 import VGG16
-from keras.preprocessing.image import ImageDataGenerator
-from keras.models import Sequential, Model
-from keras.layers import Input, Activation, Dropout, Flatten, Dense
-from keras.preprocessing.image import ImageDataGenerator
-from keras import optimizers
+import tensorflow
+from tensorflow.keras.applications.vgg16 import VGG16
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.models import Sequential, Model
+from tensorflow.keras.layers import Input, Activation, Dropout, Flatten, Dense
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras import optimizers
 import numpy as np
 from smallcnn import save_history
 
