@@ -29,7 +29,11 @@ if __name__ == '__main__':
     model = Sequential()
     model.add(Convolution2D(32, 3, 3, input_shape=(150, 150, 3)))
     model.add(Activation('relu'))
+<<<<<<< HEAD
     model.add(MaxPooling2D(pool_size=(2, 2)))
+=======
+   # model.add(MaxPooling2D(pool_size=(2, 2)))
+>>>>>>> dd9965652b103327c49d9dacead176c3e0c7116b
 
     model.add(Convolution2D(32, 3, 3))
     model.add(Activation('relu'))
@@ -74,10 +78,17 @@ if __name__ == '__main__':
     # 訓練
     history = model.fit_generator(
         train_generator,
+<<<<<<< HEAD
         samples_per_epoch=2000,
         nb_epoch=nb_epoch,
         validation_data=validation_generator,
         nb_val_samples=800)
+=======
+        steps_per_epoch=2000,
+        epochs=nb_epoch,
+        validation_data=validation_generator,
+        validation_steps=800)
+>>>>>>> dd9965652b103327c49d9dacead176c3e0c7116b
 
     # 結果を保存
     model.save_weights(os.path.join(result_dir, 'smallcnn.h5'))

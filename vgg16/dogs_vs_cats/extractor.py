@@ -1,6 +1,10 @@
 import os
 from tensorflow.keras.applications.vgg16 import VGG16
+<<<<<<< HEAD
 from tnsorflow.keras.preprocessing.image import ImageDataGenerator
+=======
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+>>>>>>> dd9965652b103327c49d9dacead176c3e0c7116b
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Activation, Dropout, Flatten, Dense
 from tensorflow.keras import optimizers
