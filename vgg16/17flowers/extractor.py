@@ -4,121 +4,109 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Activation, Dropout, Flatten, Dense
 from tensorflow.keras import optimizers
-from tensorflow.keras.utils import np_utils
+#from tensorflow.keras.utils 
+import np_utils
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Dense, GlobalAveragePooling2D,Input
+import tensorflow.keras.callbacks
+from tensorflow.keras.optimizers import SGD
+
 import numpy as np
-from smallcnn import save_history
+#from smallcnn import save_history
 
 """
->>>>>>> dd9965652b103327c49d9dacead176c3e0c7116b
 classes = ['Tulip', 'Snowdrop', 'LilyValley', 'Bluebell', 'Crocus',
            'Iris', 'Tigerlily', 'Daffodil', 'Fritillary', 'Sunflower',
            'Daisy', 'ColtsFoot', 'Dandelion', 'Cowslip', 'Buttercup',
            'Windflower', 'Pansy']
-<<<<<<< HEAD
-"
-classes = ['monkey', 'rabbit']
-=======
+
 """
-classes = ['Macaque', 'Dog', 'Cat', 'Racoon']
 
-batch_size = 32
-nb_classes = len(classes)
+classes = ['Dog', 'Cat', 'Raccoon', 'Macaque']
 
-img_rows, img_cols = 150, 150
-channels = 3
+#IMAGE_SIZE = 150
+BATCH_SIZE = 32
 
-train_data_dir = 'train_images'
-validation_data_dir = 'test_images'
+NUM_TRAINING_SAMPLES = 3000
+NUM_VALIDATION_SAMPLES = 800
+EPOCHS = 50
+N_CLASSES = len(classes)
+IMG_ROWS, IMG_COLS = 150, 150
+CHANNELS = 3
 
-nb_samples_per_class = 70
+train_data_dir = 'data/train'
+validation_data_dir = 'data/validation'
 
-nb_train_samples = 1190
-nb_val_samples = 170
-nb_epoch = 50
+#nb_samples_per_class = 120
 
 result_dir = 'results'
 if not os.path.exists(result_dir):
     os.mkdir(result_dir)
 
+def save_history(history, result_file):
+    loss = history.history['loss']
+    acc = history.history['acc']
+    val_loss = history.history['val_loss']
+    val_acc = history.history['val_acc']
+    nb_epoch = len(acc)
 
-def save_bottleneck_features():
-    """VGG16に訓練画像、バリデーション画像を入力し、
-    ボトルネック特徴量（FC層の直前の出力）をファイルに保存する"""
-
-    # VGG16モデルと学習済み重みをロード
-    # Fully-connected層（FC）はいらないのでinclude_top=False）
-    model = VGG16(include_top=False, weights='imagenet')
-    model.summary()
-
-    # ジェネレータの設定
-    datagen = ImageDataGenerator(rescale=1.0 / 255)
-
-    # 訓練セットを生成するジェネレータを作成
-    generator = datagen.flow_from_directory(
-        train_data_dir,
-        target_size=(img_rows, img_cols),
-        color_mode='rgb',
-        classes=classes,
-        class_mode='categorical',
-        batch_size=batch_size,
-        shuffle=False)
-
-    # ジェネレータから生成される画像を入力し、VGG16の出力をファイルに保存
-    bottleneck_features_train = model.predict_generator(generator, nb_train_samples)
-    np.save(os.path.join(result_dir, 'bottleneck_features_train.npy'),
-            bottleneck_features_train)
-
-    # バリデーションセットを生成するジェネレータを作成
-    generator = datagen.flow_from_directory(
-        validation_data_dir,
-        target_size=(img_rows, img_cols),
-        color_mode='rgb',
-        classes=classes,
-        class_mode='categorical',
-        batch_size=batch_size,
-        shuffle=False)
-
-    # ジェネレータから生成される画像を入力し、VGG16の出力をファイルに保存
-    bottleneck_features_validation = model.predict_generator(generator, nb_val_samples)
-    np.save(os.path.join(result_dir, 'bottleneck_features_validation.npy'),
-            bottleneck_features_validation)
-
+    with open(result_file, "w") as fp:
+        fp.write("epoch\tloss\tacc\tval_loss\tval_acc\n")
+        for i in range(nb_epoch):
+            fp.write("%d\t%f\t%f\t%f\t%f\n" % (i, loss[i], acc[i], val_loss[i], val_acc[i]))
 
 def train_top_model():
-    """VGGのボトルネック特徴量を入力とし、正解を出力とするFCネットワークを訓練"""
-    # 訓練データをロード
-    # ジェネレータではshuffle=Falseなのでクラスは順番に出てくる
-    # one-hot vector表現へ変換が必要
-    train_data = np.load(os.path.join(result_dir, 'bottleneck_features_train.npy'))
-    train_labels = [i // nb_samples_per_class for i in range(nb_train_samples)]
-    train_labels = np_utils.to_categorical(train_labels, nb_classes)
-
-    # バリデーションデータをロード
-    validation_data = np.load(os.path.join(result_dir, 'bottleneck_features_validation.npy'))
-    validation_labels = [i // nb_samples_per_class for i in range(nb_val_samples)]
-    validation_labels = np_utils.to_categorical(validation_labels, nb_classes)
-
-    # FCネットワークを構築
-    model = Sequential()
-    model.add(Flatten(input_shape=train_data.shape[1:]))
-    model.add(Dense(256, activation='relu'))
-    model.add(Dropout(0.5))
-    model.add(Dense(nb_classes, activation='softmax'))
-
+    #VGGのボトルネック特徴量を入力とし、正解を出力とするFCネットワークを訓練
+    input_tensor = Input(shape=(IMG_ROWS, IMG_COLS, CHANNELS))
+    base_model = VGG16(weights='imagenet', include_top=False,input_tensor=input_tensor)
+    x = base_model.output
+    x = GlobalAveragePooling2D()(x)
+    x = Dense(1024, activation='relu')(x)
+    predictions = Dense(N_CLASSES, activation='softmax')(x)
+    model = Model(inputs=base_model.input, outputs=predictions)
+    
+    for layer in base_model.layers:
+        layer.trainable = False
+        
+    model.compile(optimizer=SGD(lr=0.0001, momentum=0.9), loss='categorical_crossentropy',metrics=['accuracy'])
     model.summary()
+    train_datagen = ImageDataGenerator(
+        rescale=1.0 / 255,
+        shear_range=0.2,
+        zoom_range=0.2,
+        horizontal_flip=True,
+        rotation_range=10)
 
-    model.compile(loss='categorical_crossentropy',
-                  optimizer=optimizers.SGD(lr=1e-4, momentum=0.9),
-                  metrics=['accuracy'])
+    test_datagen = ImageDataGenerator(
+        rescale=1.0 / 255,)
 
-    history = model.fit(train_data, train_labels,
-                        nb_epoch=nb_epoch, batch_size=batch_size,
-                        validation_data=(validation_data, validation_labels))
+    train_generator = train_datagen.flow_from_directory(
+        train_data_dir,
+        target_size=(IMG_ROWS, IMG_COLS),
+        batch_size=BATCH_SIZE,
+        class_mode='categorical',
+        shuffle=True)
 
-    model.save_weights(os.path.join(result_dir, 'bottleneck_fc_model.h5'))
-    save_history(history, os.path.join(result_dir, 'history_extractor.txt'))
+    validation_generator = test_datagen.flow_from_directory(
+        validation_data_dir,
+        target_size=(IMG_ROWS, IMG_COLS),
+        batch_size=BATCH_SIZE,
+        class_mode='categorical',
+        shuffle=True)
+    
+    hist = model.fit_generator(train_generator,
+                               steps_per_epoch=NUM_TRAINING_SAMPLES//BATCH_SIZE,
+                               epochs=EPOCHS,
+                               verbose=1,
+                               validation_data=validation_generator,
+                               validation_steps=NUM_VALIDATION_SAMPLES//BATCH_SIZE,
+                              )
 
-
+    #model.save('vermins_fc_model.hdf5')
+    model.save(os.path.join(result_dir, 'vermins_fc_model.h5'))
+    save_history(hist, os.path.join(result_dir, 'history_extractor.txt'))
+   
+    
 if __name__ == '__main__':
-    save_bottleneck_features()
+    #save_bottleneck_features()
     train_top_model()

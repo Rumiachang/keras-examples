@@ -1,10 +1,11 @@
 import os
-from keras.models import Sequential
-from keras.layers import Dense, Dropout, Activation, Flatten
-from keras.layers import Convolution2D, MaxPooling2D
-from keras.utils import np_utils
-from keras.utils.visualize_util import plot
-from keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten
+from tensorflow.keras.layers import Convolution2D, MaxPooling2D
+#from tensorflow.keras.utils 
+import np_utils
+from tensorflow.keras.utils.visualize_util import plot
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 nb_epoch = 50
 

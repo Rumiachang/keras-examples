@@ -1,57 +1,39 @@
 import os
-import shutil
-import random
+import glob
+"""
+train.zipを解凍したtrainから
+https://blog.keras.io/building-powerful-image-classification-models-using-very-little-data.html
+にあるように訓練データを振り分ける
+"""
 
-IN_DIR = 'jpg'
-TRAIN_DIR = 'train_images'
-TEST_DIR = 'test_images'
+imgs_path = "./image_dir/*.png"
+source_dir = "./train"
+train_dir = "./data/train"
+valid_dir = "./data/validation"
 
-if not os.path.exists(TRAIN_DIR):
-    os.mkdir(TRAIN_DIR)
+os.makedirs("%s/Dog" % train_dir)
+os.makedirs("%s/Cat" % train_dir)
+os.makedirs("%s/Dog" % valid_dir)
+os.makedirs("%s/Cat" % valid_dir)
 
-if not os.path.exists(TEST_DIR):
-    os.mkdir(TEST_DIR)
+"""
+list_imgs_path = glob.glob(imgs_path)
+for i, imgs_file in enumerate(list_imgs_path):
+    os.rename(imgs_file ,"./image_dir/" + str(i) + ".png" )
+"""
 
-# name => (start idx, end idx)
-flower_dics = {}
 
-with open('labels.txt') as fp:
-    for line in fp:
-        line = line.rstrip()
-        cols = line.split()
+# 最初の1000枚の画像をtrain_dirに移動
+for i in range(1000):
+    os.rename("%s/dog.%d.jpg" % (source_dir, i + 1),
+              "%s/Dog/dog%04d.jpg" % (train_dir, i + 1))
+    os.rename("%s/cat.%d.jpg" % (source_dir, i + 1),
+              "%s/Cat/cat%04d.jpg" % (train_dir, i + 1))
 
-        assert len(cols) == 3
+# 次の400枚の画像をvalid_dirに移動
+for i in range(400):
+    os.rename("%s/dog.%d.jpg" % (source_dir, 1000 + i + 1),
+              "%s/Dog/dog%04d.jpg" % (valid_dir, i + 1))
+    os.rename("%s/cat.%d.jpg" % (source_dir, 1000 + i + 1),
+              "%s/Cat/cat%04d.jpg" % (valid_dir, i + 1))
 
-        start = int(cols[0])
-        end = int(cols[1])
-        name = cols[2]
-
-        flower_dics[name] = (start, end)
-
-# 花ごとのディレクトリを作成
-for name in flower_dics:
-    os.mkdir(os.path.join(TRAIN_DIR, name))
-    os.mkdir(os.path.join(TEST_DIR, name))
-
-# jpgをスキャン
-for f in sorted(os.listdir(IN_DIR)):
-    # image_0001.jpg => 1
-    prefix = f.replace('.jpg', '')
-    idx = int(prefix.split('_')[1])
-
-    for name in flower_dics:
-        start, end = flower_dics[name]
-        if idx in range(start, end + 1):
-            source = os.path.join(IN_DIR, f)
-            dest = os.path.join(TRAIN_DIR, name)
-            shutil.copy(source, dest)
-            continue
-
-# 訓練データの各ディレクトリからランダムに10枚をテストとする
-for d in os.listdir(TRAIN_DIR):
-    files = os.listdir(os.path.join(TRAIN_DIR, d))
-    random.shuffle(files)
-    for f in files[:10]:
-        source = os.path.join(TRAIN_DIR, d, f)
-        dest = os.path.join(TEST_DIR, d)
-        shutil.move(source, dest)
