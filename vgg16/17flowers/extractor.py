@@ -1,21 +1,10 @@
 import os
 from tensorflow.keras.applications.vgg16 import VGG16
-<<<<<<< HEAD
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Activation, Dropout, Flatten, Dense
 from tensorflow.keras import optimizers
 from tensorflow.keras.utils import np_utils
-import numpy as np
-from smallcnn import save_history
-
-"
-=======
-from keras.preprocessing.image import ImageDataGenerator
-from keras.models import Sequential
-from keras.layers import Activation, Dropout, Flatten, Dense
-from keras import optimizers
-from keras.utils import np_utils
 import numpy as np
 from smallcnn import save_history
 
@@ -30,8 +19,8 @@ classes = ['Tulip', 'Snowdrop', 'LilyValley', 'Bluebell', 'Crocus',
 classes = ['monkey', 'rabbit']
 =======
 """
-classes = ['Japanese macaque', 'Human']
->>>>>>> dd9965652b103327c49d9dacead176c3e0c7116b
+classes = ['Macaque', 'Dog', 'Cat', 'Racoon']
+
 batch_size = 32
 nb_classes = len(classes)
 
