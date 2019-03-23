@@ -20,20 +20,33 @@ nb_classes = len(classes)
 
 img_rows, img_cols = 150, 150
 channels = 3
+ #InceptionV3のボトルネック特徴量を入力とし、正解クラスを出力とするFCNNを作成する
+input_tensor = Input(shape=(IMG_ROWS, IMG_COLS, CHANNELS))
+#入力テンソル（画像の縦横ピクセルとRGBチャンネルによる3階テンソル）
+base_model = InceptionV3(weights='imagenet', include_top=False,input_tensor=input_tensor)
+x = base_model.output
+x = GlobalAveragePooling2D()(x)
+    #出力テンソルをflatten
+x = Dense(1024, activation='relu')(x)
+    #全結合，ノード数1024，活性化関数relu
+predictions = Dense(N_CLASSES, activation='softmax')(x)
+model = Model(inputs=base_model.input, outputs=predictions)
+  
+for layer in base_model.layers:
+    layer.trainable = False
 
-# VGG16
-input_tensor = Input(shape=(img_rows, img_cols, channels))
-vgg16 = VGG16(include_top=False, weights='imagenet', input_tensor=input_tensor)
+model.load_weights(os.path.join(result_dir, 'vermins.h5'))
+model.compile(optimizer=SGD(lr=0.0001, momentum=0.9), loss='categorical_crossentropy',metrics=['accuracy'])
+model.summary()
 
-# FC
-top_model = Sequential()
-top_model.add(Flatten(input_shape=vgg16.output_shape[1:]))
-top_model.add(Dense(256, activation='relu'))
-top_model.add(Dropout(0.5))
-top_model.add(Dense(nb_classes, activation='softmax'))
+       test_datagen = ImageDataGenerator(rescale=1.0 / 255)
 
-# VGG16とFCを接続
-model = Model(input=vgg16.input, output=top_model(vgg16.output))
+    train_generator = train_datagen.flow_from_directory(directory=train_data_dir,
+                                                        target_size=(IMG_ROWS, IMG_COLS),
+                                                        batch_size=BATCH_SIZE,
+                                                        class_mode='categorical',
+                                                        shuffle=True
+                                                       )
 
 # 学習済みの重みをロード
 model.load_weights(os.path.join(result_dir, 'finetuning.h5'))
